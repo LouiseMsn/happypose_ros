@@ -48,6 +48,10 @@ class Detector:
         image = self.convert_obstensor_to_image(observation)
         results = self.yolo_model(image, stream=True)
 
+        classNames = ["bar-holder-stripped-bi-v3","pannel"]
+        object_data = []
+
+
         for r in results:
             boxes = r.boxes
             min_confidence = 0
@@ -57,73 +61,93 @@ class Detector:
                 for box in boxes:
                     confidence = math.ceil((box.conf[0] * 100)) / 100
 
-                    if DEBUG:
+                    label=classNames[int(box.cls[0])]
+                    self.logger.info("LABEL: "+ label)
+                    self.logger.info("CONFIDENCE: "+ str(confidence))
+
+                    if confidence >=0.1:
                         x1, y1, x2, y2 = box.xyxy[0]
-                        self.logger.info(
-                            "confidence: "
-                            + str(confidence)
-                            + "\t"
-                            + str(int(x1))
-                            + " "
-                            + str(int(x2))
-                            + " "
-                            + str(int(y1))
-                            + " "
-                            + str(int(y2))
-                        )
+                        x1, y1, x2, y2 = (
+                                            int(x1),
+                                            int(y1),
+                                            int(x2),
+                                            int(y2),
+                                        )
+                        object_to_add = ObjectData(label=label, bbox_modal=np.array([x1, y1, x2, y2]))
+                        object_data.append(object_to_add)
+                        #!
+                        self.logger.info(str(object_data))
 
-                    if confidence > min_confidence:
-                        box_w_max_conf = box
-                        min_confidence = confidence
 
-                # bounding box coordinates
-                x1, y1, x2, y2 = box_w_max_conf.xyxy[0]
-                x1, y1, x2, y2 = (
-                    int(x1),
-                    int(y1),
-                    int(x2),
-                    int(y2),
-                )  # convert to int values
+                #     if DEBUG:
+                #         x1, y1, x2, y2 = box.xyxy[0]
+                #         self.logger.info(
+                #             "confidence: "
+                #             + str(confidence)
+                #             + "\t"
+                #             + str(int(x1))
+                #             + " "
+                #             + str(int(x2))
+                #             + " "
+                #             + str(int(y1))
+                #             + " "
+                #             + str(int(y2))
+                #         )
 
-                if DEBUG:
-                    self.logger.info(
-                        "Max confidence: "
-                        + str(int(x1))
-                        + " "
-                        + str(int(x2))
-                        + " "
-                        + str(int(y1))
-                        + " "
-                        + str(int(y2))
-                    )
+                #     if confidence > min_confidence:
+                #         box_w_max_conf = box
+                #         min_confidence = confidence
 
-                    # Create a Rectangle patch for debug
-                    image = Image.fromarray(image.astype("uint8"), "RGB")
-                    fig, ax = plt.subplots()
-                    ax.imshow(image)
-                    rect = patches.Rectangle(
-                        (x1, y1),
-                        x2 - x1,
-                        y2 - y1,
-                        linewidth=1,
-                        edgecolor="r",
-                        facecolor="none",
-                    )
+                # # bounding box coordinates
+                # x1, y1, x2, y2 = box_w_max_conf.xyxy[0]
+                # x1, y1, x2, y2 = (
+                #     int(x1),
+                #     int(y1),
+                #     int(x2),
+                #     int(y2),
+                # )  # convert to int values
 
-                    # Add the patch to the Axes
-                    ax.add_patch(rect)
-                    plt.show()
+                # if DEBUG:
+                #     self.logger.info(
+                #         "Max confidence: "
+                #         + str(int(x1))
+                #         + " "
+                #         + str(int(x2))
+                #         + " "
+                #         + str(int(y1))
+                #         + " "
+                #         + str(int(y2))
+                #     )
+
+                #     # Create a Rectangle patch for debug
+                #     image = Image.fromarray(image.astype("uint8"), "RGB")
+                #     fig, ax = plt.subplots()
+                #     ax.imshow(image)
+                #     rect = patches.Rectangle(
+                #         (x1, y1),
+                #         x2 - x1,
+                #         y2 - y1,
+                #         linewidth=1,
+                #         edgecolor="r",
+                #         facecolor="none",
+                #     )
+
+                #     # Add the patch to the Axes
+                #     ax.add_patch(rect)
+                #     plt.show()
+
 
             else:
                 return None
 
-        object_data = ObjectData(
-            label=self.label, bbox_modal=np.array([x1, y1, x2, y2])
-        )
-
-        object_data = [object_data]
+        # object_data = ObjectData(
+        #     label=self.label, bbox_modal=np.array([x1, y1, x2, y2])
+        # )
+        # object_data = [object_data]
+        # self.logger.info(str(object_data))
 
         detections = make_detections_from_object_data(object_data).to(self._device)
+        self.logger.info(str(type(detections)))
 
         return detections
 
