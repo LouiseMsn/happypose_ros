@@ -32,6 +32,10 @@ from happypose.toolbox.utils.load_model import NAMED_MODELS, load_named_model
 
 from happypose_ros.megapose_detector import Detector
 
+#!
+from rclpy.impl import rcutils_logger
+logger = rcutils_logger.RcutilsLogger(name="inference")
+
 
 class InferencePipeline(ABC):
     """Abstract class from which the CosyPosePipeline and MegaPosePipeline inherit."""
@@ -140,6 +144,9 @@ class CosyPosePipeline(InferencePipeline):
             output_masks=False,
             **self._inference_args["detector"],
         )
+
+        #!        
+        logger.info(str(detections))
 
         t2 = time.perf_counter()
         timings["detections"] = t2 - t1
@@ -317,6 +324,8 @@ class MegaPosePipeline(InferencePipeline):
         t1 = time.perf_counter()
 
         detections = self.detector.run(observation)
+        #!
+        logger.info(str(detections))
 
         if detections is None:
             return None
@@ -335,6 +344,8 @@ class MegaPosePipeline(InferencePipeline):
             **self.model_info["inference_parameters"],
         )
 
+        logger.info("flag")
+        
         object_predictions = data_TCO_final.cpu()
 
         t3 = time.perf_counter()

@@ -176,6 +176,7 @@ class HappyPoseNode(Node):
                 database_location=self._params.megapose.mesh.directory_path,
                 database_version=0,
             )
+            self.get_logger().info("Meshfile " + self._params.megapose.mesh.directory_path)
 
         # Each camera registers its topics and fires a synchronization callback on new image
         self._cameras = {
