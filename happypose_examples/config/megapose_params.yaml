@@ -15,11 +15,14 @@
       # Name of the megapose model to be used for inference
       model_name: "megapose-1.0-RGB-multi-hypothesis"
       # Path to the directory of the mesh
-      mesh_dir: "/docker_files/happypose_ros_data/meshes"
+      mesh_dir: "/home/ros/share/hpose_ws/src/happypose_ros/happypose_examples/resources/meshes/" #"/docker_files/happypose_ros_data/meshes"
       # Filetype of mesh
       mesh_file_extension: "obj"
       # Unit of the mesh
       mesh_units: "mm"
+      #path to the yolo model
+      detector:
+        detector_path: "/home/ros/share/hpose_ws/src/happypose_ros/happypose_examples/resources/yolo-checkpoints/bar-holder_pannel.pt"
     # List of camera names to subscribe to. Those names are internal to happypose_ros node
     # and can be chosen arbitrarily as long as they are valid YAML keys to be used later
     camera_names: ["cam_1"]
